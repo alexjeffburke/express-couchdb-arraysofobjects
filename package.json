@@ -1,12 +1,17 @@
 {
   "name": "express-couchdb-arraysofobjects",
   "version": "0.0.0",
-  "description": "",
+  "description": "Simple express handler for arrays of objects in CouchDB",
   "main": "lib/arraysOfObjects.js",
   "scripts": {
     "test": "./node_modules/.bin/mocha"
   },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/alexjeffburke/express-couchdb-arraysofobjects.git"
+  },
   "author": "Alex J Burke",
+  "license": "BSD",
   "dependencies": {
     "beanbag": "3.3.1",
     "body-parser": "1.12.2",
