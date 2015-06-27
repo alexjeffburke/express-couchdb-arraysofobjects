@@ -5,9 +5,7 @@ var streamBuffers = require('stream-buffers');
 function assertDocuments(documents) {
     var b = new streamBuffers.WritableStreamBuffer();
 
-    documentsToCsv(b, 'somename', documents);
-
-    b.destroy();
+    documentsToCsv('somename').writeToStream(b, documents);
 
     // if nothing was written return the empty string
     return (b.getContentsAsString('utf8') || '');
