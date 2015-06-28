@@ -1,33 +1,48 @@
 var documentsToCsv = require('../lib/documentsToCsv');
 var expect = require('unexpected');
-var streamBuffers = require('stream-buffers');
+var stream = require('stream');
 
-function assertDocuments(documents) {
-    var b = new streamBuffers.WritableStreamBuffer();
+function assertDocuments(documents, callback) {
+    callback = callback || function () {};
+    var dest = new stream.Writable();
+    var rawChunks = [];
 
-    documentsToCsv('somename').writeToStream(b, documents);
+    dest._write = function (chunk) {
+        rawChunks.push(chunk);
+    };
 
-    // if nothing was written return the empty string
-    return (b.getContentsAsString('utf8') || '');
+    dest.end = function () {
+        callback(null, Buffer.concat(rawChunks).toString());
+    };
+
+    documentsToCsv('somename').writeToStream(dest, documents);
 }
 
 describe('documentToCsv', function () {
     expect.addAssertion('to have output lines', function (expect, subject, expectedRows) {
         this.errorMode = 'bubble';
-        var output = assertDocuments([subject]);
-        // make output string into array of rows
-        var rows = output.split('\r\n').map(function (line) { return line.split(','); });
-        // remove trailing row
-        rows.pop();
 
-        expect(rows, 'to have length', !!subject.somename ? subject.somename.length + 1 : 0);
+        subject = Array.isArray(subject) ? subject : [subject];
 
-        // quote expected string values
-        expectedRows = expectedRows.map(function (row) {
-            return row.map(function (value) { return (typeof value === 'string') ? '"' + value +'"' : value; });
+        function localAssertDocuments(cb) {
+            assertDocuments(subject, cb);
+        }
+
+        return expect(localAssertDocuments, 'to call the callback without error').spread(function (output) {
+            // make output string into array of rows
+            var rows = output.split('\r\n').map(function (line) { return line.split(','); });
+            // remove trailing row
+            rows.pop();
+
+            expect(rows, 'to have length', expectedRows.length);
+
+            // quote expected string values
+            expectedRows = expectedRows.map(function (row) {
+                return row.map(function (value) { return (typeof value === 'string') ? '"' + value +'"' : value; });
+            });
+
+            expect(rows, 'to equal', expectedRows);
         });
-
-        expect(rows, 'to equal', expectedRows);
     });
 
     it('should not error with no documents present', function () {
@@ -37,23 +52,7 @@ describe('documentToCsv', function () {
     });
 
     it('should return empty output if no documents were present', function () {
-        var output = assertDocuments([]);
-
-        expect(output, 'to be empty');
-    });
-
-    it('should return output if documents were present', function () {
-        var output = assertDocuments([{
-            _id: 'myId',
-            somename: [
-                {
-                    a: 'foo',
-                    b: 'bar'
-                }
-            ]
-        }]);
-
-        expect(output, 'not to be empty');
+        expect([], 'to have output lines', []);
     });
 
     it('should return no rows when the document has no content', function () {
