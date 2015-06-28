@@ -30,12 +30,12 @@ Listed out, a document stored and retrieved by the handler looks as follows:
     "_id": "myId",
     "somename": [
         {
-            entry: 123,
-            foo: "foo"
+            "entry": 123,
+            "foo": "foo"
         },
         {
-            entry: 456,
-            foo: "baz"
+            "entry": 456,
+            "foo": "baz"
         }
     ]
 }
