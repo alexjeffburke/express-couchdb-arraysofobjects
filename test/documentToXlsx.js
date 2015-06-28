@@ -15,7 +15,9 @@ function assertDocuments(documents, callback) {
         callback(null, rowObjects);
     };
 
-    documentsToXlsx('somename').writeToStream(dest, documents);
+    documentsToXlsx('somename').on('headerRow', function (headerRow) {
+        rowObjects.push(headerRow);
+    }).writeToStream(dest, documents);
 }
 
 describe('documentToXlsx', function () {
@@ -67,6 +69,7 @@ describe('documentToXlsx', function () {
         };
 
         expect(doc, 'to have output rows', [
+            ['id', 'a', 'b'],
             ['myId', 'foo', 'bar']
         ]);
     });
@@ -88,6 +91,7 @@ describe('documentToXlsx', function () {
         };
 
         expect(doc, 'to have output rows', [
+            ['id', 'a', 'b'],
             ['id', 'row1'],
             ['id', 'row2'],
             ['id', 'row3']
