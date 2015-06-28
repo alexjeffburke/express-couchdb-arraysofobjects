@@ -100,8 +100,11 @@ Generic functionality
 With objects in a standard format various other facilities are made available
 by the endpoints.
 
-### Formatting output as CSV
+### Formatting output
 
-The GET endpoints support an optional format parameter on the URL which, when
-specified as *csv*, the entries for the document(s) will be written to the
-output as rows of CSV output. The output will be prepended by a header row.
+Supplying the optional `format` parameter query string to the GET endpoints
+will cause the output to be generated and downloaded automatically as the
+requested format. The following values are supported:
+
+* `csv`  - output the data as comma separated text file
+* `xlsx` - output the data as an Excel XLSX file
