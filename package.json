@@ -1,6 +1,6 @@
 {
   "name": "express-couchdb-arraysofobjects",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Simple express handler for arrays of objects in CouchDB",
   "main": "lib/arraysOfObjects.js",
   "scripts": {
