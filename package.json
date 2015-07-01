@@ -13,7 +13,7 @@
   "author": "Alex J Burke",
   "license": "BSD",
   "dependencies": {
-    "beanbag": "3.3.1",
+    "beanbag": "3.3.2",
     "body-parser": "1.12.2",
     "express": "4.12.3",
     "xlsx-export": "0.0.4",
