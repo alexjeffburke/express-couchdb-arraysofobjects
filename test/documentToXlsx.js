@@ -61,6 +61,7 @@ describe('documentToXlsx', function () {
     it('should return a row when there is content within the document', function () {
         var doc = {
             _id: 'myId',
+            additionalColumn: 'included',
             somename: [
                 {
                     a: 'foo',
@@ -70,8 +71,8 @@ describe('documentToXlsx', function () {
         };
 
         return expect(doc, 'to have output rows', [
-            ['id', 'a', 'b'],
-            ['myId', 'foo', 'bar']
+            ['id', 'additionalColumn', 'a', 'b'],
+            ['myId', 'included', 'foo', 'bar']
         ]);
     });
 
