@@ -4,19 +4,26 @@ var stream = require('stream');
 
 function assertDocuments(documents, callback) {
     callback = callback || function () {};
-    var dest = new stream.Writable({ objectMode: true });
-    var rowObjects = [];
+    var dest = new stream.Writable();
+    var rows = [];
 
-    dest._write = function (chunk) {
-        rowObjects.push(chunk);
+    dest._write = function (chunk, encoding, callback) {
+        callback();
     };
 
     dest.end = function () {
-        callback(null, rowObjects);
+        callback(null, rows);
     };
 
     documentsToXlsx('somename').on('headerRow', function (headerRow) {
-        rowObjects.push(headerRow);
+        rows.push(headerRow);
+    }).on('rowObject', function (rowObject) {
+        // convert row object to a flat values list
+        row = Object.keys(rowObject).map(function (prop) {
+            return rowObject[prop];
+        });
+
+        rows.push(row);
     }).writeToStream(dest, documents);
 }
 
@@ -30,13 +37,7 @@ describe('documentToXlsx', function () {
             assertDocuments(subject, cb);
         }
 
-        return expect(localAssertDocuments, 'to call the callback without error').spread(function (rowObjects) {
-            var rows = rowObjects.map(function (o) {
-                return Object.keys(o).map(function (prop) {
-                    return rowObjects[prop];
-                });
-            });
-
+        return expect(localAssertDocuments, 'to call the callback without error').spread(function (rows) {
             expect(rows, 'to have length', expectedRows.length);
 
             expect(rows, 'to equal', expectedRows);
@@ -68,7 +69,7 @@ describe('documentToXlsx', function () {
             ]
         };
 
-        expect(doc, 'to have output rows', [
+        return expect(doc, 'to have output rows', [
             ['id', 'a', 'b'],
             ['myId', 'foo', 'bar']
         ]);
@@ -90,8 +91,8 @@ describe('documentToXlsx', function () {
             ]
         };
 
-        expect(doc, 'to have output rows', [
-            ['id', 'a', 'b'],
+        return expect(doc, 'to have output rows', [
+            ['id', 'data'],
             ['id', 'row1'],
             ['id', 'row2'],
             ['id', 'row3']

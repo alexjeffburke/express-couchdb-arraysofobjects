@@ -7,8 +7,10 @@ function assertDocuments(documents, callback) {
     var dest = new stream.Writable();
     var rawChunks = [];
 
-    dest._write = function (chunk) {
+    dest._write = function (chunk, encoding, callback) {
         rawChunks.push(chunk);
+
+        callback();
     };
 
     dest.end = function () {
@@ -70,7 +72,7 @@ describe('documentToCsv', function () {
             ]
         };
 
-        expect(doc, 'to have output lines', [
+        return expect(doc, 'to have output lines', [
             ['id', 'a', 'b'],
             ['myId', 'foo', 'bar']
         ]);
@@ -92,7 +94,7 @@ describe('documentToCsv', function () {
             ]
         };
 
-        expect(doc, 'to have output lines', [
+        return expect(doc, 'to have output lines', [
             ['id', 'data'],
             ['id', 'row1'],
             ['id', 'row2'],
