@@ -16,6 +16,7 @@
     "beanbag": "3.3.2",
     "body-parser": "1.12.2",
     "express": "4.12.3",
+    "httperrors": "1.1.0",
     "underscore": "=1.8.3",
     "xlsx-export": "0.0.4",
     "ya-csv": "=0.9.4"

@@ -1,4 +1,5 @@
 var arraysOfObjects = require('../lib/arraysOfObjects');
+var BeanBag = require('beanbag');
 var expect = require('unexpected')
         .clone()
         .installPlugin(require('unexpected-express'));
@@ -125,6 +126,57 @@ describe('express-couchdb-arraysofobjects', function () {
                     body: {
                         somename: documents
                     }
+                }
+            });
+        });
+
+        it('should fail to _clear without confirmation', function () {
+            return expect(createHandler({
+                handlerName: 'faildelete',
+                databaseName: 'faildelete'
+            }), 'to yield exchange', {
+                request: {
+                    url: '/_clear',
+                    method: 'POST'
+                },
+                response: {
+                    statusCode: 412
+                }
+            });
+        });
+
+        it('should empty the database on confirmed _clear', function () {
+            var documents = [
+                {
+                    _id: 'a@example.com'
+                },
+                {
+                    _id: 'b@example.com'
+                },
+                {
+                    _id: 'c@example.com'
+                }
+            ];
+
+            var myHandler = createHandler({
+                handlerName: 'deleted',
+                databaseName: 'arraysofobjects'
+            });
+
+            return expect(myHandler, 'with couchdb mocked out', {
+                arraysofobjects: {
+                    docs: documents
+                }
+            }, 'to yield exchange', {
+                request: {
+                    url: '/_clear',
+                    method: 'POST',
+                    body: {
+                        confirmation: true
+                    }
+                },
+                response: {
+                    statusCode: 200
                 }
             });
         });
