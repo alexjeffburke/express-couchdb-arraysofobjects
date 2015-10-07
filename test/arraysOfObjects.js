@@ -3,7 +3,7 @@ var BeanBag = require('beanbag');
 var expect = require('unexpected')
         .clone()
         .installPlugin(require('unexpected-express'));
-var mockCouch = require('mock-couch');
+var mockCouch = require('mock-couch-alexjeffburke');
 
 function extend(target, source) {
     Object.keys(source).forEach(function (prop) {
@@ -192,7 +192,7 @@ describe('express-couchdb-arraysofobjects', function () {
             ];
 
             var myHandler = createHandler({
-                handlerName: 'deleted',
+                handlerName: 'deletedhandler',
                 databaseName: 'arraysofobjects'
             });
 
@@ -212,6 +212,18 @@ describe('express-couchdb-arraysofobjects', function () {
                     response: {
                         statusCode: 200
                     }
+                }).then(function () {
+                    return expect(myHandler, 'to yield exchange', {
+                        request: {
+                            url: '/'
+                        },
+                        response: {
+                            statusCode: 200,
+                            body: {
+                                deletedhandler: []
+                            }
+                        }
+                    });
                 });
             });
         });
