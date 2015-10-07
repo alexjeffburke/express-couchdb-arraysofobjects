@@ -227,6 +227,83 @@ describe('express-couchdb-arraysofobjects', function () {
                 });
             });
         });
+
+        it('should handled a conflicted _clear', function () {
+            var conflictDocument = {
+                _id: 'c@example.com'
+            };
+            var databaseName = 'arraysofobjects';
+            var documents = [
+                {
+                    _id: 'a@example.com'
+                },
+                {
+                    _id: 'b@example.com'
+                },
+                conflictDocument
+            ];
+
+            var myHandler = createHandler({
+                handlerName: 'conflictedhandler',
+                databaseName: databaseName
+            });
+
+            return expect(myHandler, 'with cleanup', function () {
+                /*
+                 * Simulate _clear losing a race to a document update.
+                 *
+                 * Arrange for the mutation of one of the documents which will cause the state of
+                 * revisions in the database to be inconsistent with what was loaded as part of the
+                 * _all_docs request in the _clear handler. When _bulk_docs is triggered this will
+                 * cause a conflict and we assert the offending document is listed as rejected.
+                 */
+                couchMock.on('GET', function (eventData) {
+                    var documentObject;
+
+                    if (eventData.type === '_all_docs' && eventData.database === databaseName) {
+                        documentObject = couchMock.databases[databaseName][conflictDocument._id];
+                        // reset the revision
+                        documentObject._rev = '2-b';
+                        // record the new revision
+                        conflictDocument._rev = documentObject._rev;
+                    }
+                });
+
+                return expect(myHandler, 'using mocked out couchdb', {
+                    arraysofobjects: {
+                        docs: documents
+                    }
+                }, 'to yield exchange', {
+                    request: {
+                        url: '/_clear',
+                        method: 'POST',
+                        body: {
+                            confirmation: true
+                        }
+                    },
+                    response: {
+                        statusCode: 409,
+                        body: {
+                            rejected: [{
+                                _id: conflictDocument._id
+                            }]
+                        }
+                    }
+                }).then(function () {
+                    return expect(myHandler, 'to yield exchange', {
+                        request: {
+                            url: '/'
+                        },
+                        response: {
+                            statusCode: 200,
+                            body: {
+                                conflictedhandler: [conflictDocument]
+                            }
+                        }
+                    });
+                });
+            });
+        });
     });
 
     describe('document requests', function () {
