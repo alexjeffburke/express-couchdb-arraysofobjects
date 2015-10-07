@@ -163,6 +163,85 @@ describe('express-couchdb-arraysofobjects', function () {
             });
         });
 
+        it('should allow bulk update', function () {
+            var documents = [
+                {
+                    _id: 'a@example.com',
+                    _rev: '1-a'
+                },
+                {
+                    _id: 'b@example.com',
+                    _rev: '2-b'
+                },
+                {
+                    _id: 'c@example.com'
+                }
+            ];
+
+            return expect(createHandler({
+                handlerName: 'somename',
+                databaseName: 'bulkupdate'
+            }), 'with couchdb mocked out', {
+                bulkupdate: {}
+            }, 'to yield exchange', {
+                request: {
+                    url: '/',
+                    method: 'POST',
+                    body: {
+                        docs: documents
+                    }
+                },
+                response: {
+                    statusCode: 200
+                }
+            });
+        });
+
+        it('should catch bulk update conflict', function () {
+            var documents = [
+                {
+                    _id: 'a@example.com',
+                    _rev: '1-a'
+                },
+                {
+                    _id: 'b@example.com',
+                    _rev: '2-b'
+                }
+            ];
+            var failDocument = {
+                _id: documents[1]._id
+            };
+            var submitDocuments = documents.slice(0);
+            submitDocuments[1] = failDocument;
+
+            return expect(createHandler, 'with cleanup', function () {
+                return expect(createHandler({
+                    handlerName: 'somename',
+                    databaseName: 'bulkupdateconflict'
+                }), 'using mocked out couchdb', {
+                    bulkupdateconflict: {
+                        docs: documents
+                    }
+                }, 'to yield exchange', {
+                    request: {
+                        url: '/',
+                        method: 'POST',
+                        body: {
+                            docs: submitDocuments
+                        }
+                    },
+                    response: {
+                        statusCode: 409,
+                        body: {
+                            rejected: [{
+                                _id: failDocument._id
+                            }]
+                        }
+                    }
+                });
+            });
+        });
+
         it('should fail to _clear without confirmation', function () {
             return expect(createHandler({
                 handlerName: 'faildelete',
