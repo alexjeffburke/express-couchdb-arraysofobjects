@@ -20,6 +20,39 @@ describe('express-couchdb-arraysofobjects', function () {
         return arraysOfObjects(options);
     }
 
+    var couchMock;
+
+    function mockCleanUp() {
+        couchMock.close();
+        couchMock = null;
+    }
+
+    expect.addAssertion('with cleanup', function (expect, subject, assertFn) {
+        var that = this;
+
+        return expect.promise(function (run) {
+            couchMock = mockCouch.createServer();
+
+            couchMock.listen(testPort, run);
+        }).then(function () {
+            return expect.promise(function (resolve, reject) {
+                return resolve(assertFn());
+            }).finally(mockCleanUp);
+        });
+    });
+
+    expect.addAssertion('using mocked out couchdb', function (expect, subject, databases) {
+        var that = this;
+
+        return expect.promise(function () {
+            Object.keys(databases).forEach(function (databaseName) {
+                couchMock.addDB(databaseName, databases[databaseName].docs);
+            });
+        }).then(function () {
+            return that.shift(subject, 1);
+        });
+    });
+
     expect.addAssertion('with couchdb mocked out', function (expect, subject, databases) {
         var couchServer;
         var that = this;
@@ -163,21 +196,23 @@ describe('express-couchdb-arraysofobjects', function () {
                 databaseName: 'arraysofobjects'
             });
 
-            return expect(myHandler, 'with couchdb mocked out', {
-                arraysofobjects: {
-                    docs: documents
-                }
-            }, 'to yield exchange', {
-                request: {
-                    url: '/_clear',
-                    method: 'POST',
-                    body: {
-                        confirmation: true
+            return expect(myHandler, 'with cleanup', function () {
+                return expect(myHandler, 'using mocked out couchdb', {
+                    arraysofobjects: {
+                        docs: documents
                     }
-                },
-                response: {
-                    statusCode: 200
-                }
+                }, 'to yield exchange', {
+                    request: {
+                        url: '/_clear',
+                        method: 'POST',
+                        body: {
+                            confirmation: true
+                        }
+                    },
+                    response: {
+                        statusCode: 200
+                    }
+                });
             });
         });
     });
