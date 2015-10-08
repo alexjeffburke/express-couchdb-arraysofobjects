@@ -193,7 +193,7 @@ describe('express-couchdb-arraysofobjects', function () {
                         url: '/',
                         method: 'POST',
                         body: {
-                            docs: documents
+                            bulkupdate: documents
                         }
                     },
                     response: {
@@ -241,7 +241,7 @@ describe('express-couchdb-arraysofobjects', function () {
 
             return expect(createHandler, 'with cleanup', function () {
                 return expect(createHandler({
-                    handlerName: 'somename',
+                    handlerName: 'bulkupdateconflict',
                     databaseName: 'bulkupdateconflict'
                 }), 'using mocked out couchdb', {
                     bulkupdateconflict: {
@@ -252,7 +252,7 @@ describe('express-couchdb-arraysofobjects', function () {
                         url: '/',
                         method: 'POST',
                         body: {
-                            docs: submitDocuments
+                            bulkupdateconflict: submitDocuments
                         }
                     },
                     response: {
