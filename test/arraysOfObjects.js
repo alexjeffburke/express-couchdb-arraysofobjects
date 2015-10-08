@@ -310,7 +310,7 @@ describe('express-couchdb-arraysofobjects', function () {
                         url: '/_clear',
                         method: 'POST',
                         body: {
-                            confirmation: true
+                            confirmed: true
                         }
                     },
                     response: {
@@ -382,7 +382,7 @@ describe('express-couchdb-arraysofobjects', function () {
                         url: '/_clear',
                         method: 'POST',
                         body: {
-                            confirmation: true
+                            confirmed: true
                         }
                     },
                     response: {
