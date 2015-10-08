@@ -167,33 +167,58 @@ describe('express-couchdb-arraysofobjects', function () {
             var documents = [
                 {
                     _id: 'a@example.com',
-                    _rev: '1-a'
+                    _rev: '1-b',
+                    foo: 'bar'
                 },
                 {
                     _id: 'b@example.com',
-                    _rev: '2-b'
+                    _rev: '1-c',
+                    baz: {}
                 },
                 {
                     _id: 'c@example.com'
                 }
             ];
 
-            return expect(createHandler({
-                handlerName: 'somename',
+            var myHandler = createHandler({
+                handlerName: 'bulkupdate',
                 databaseName: 'bulkupdate'
-            }), 'with couchdb mocked out', {
-                bulkupdate: {}
-            }, 'to yield exchange', {
-                request: {
-                    url: '/',
-                    method: 'POST',
-                    body: {
-                        docs: documents
+            });
+
+            return expect(myHandler, 'with cleanup', function () {
+                return expect(myHandler, 'using mocked out couchdb', {
+                    bulkupdate: {}
+                }, 'to yield exchange', {
+                    request: {
+                        url: '/',
+                        method: 'POST',
+                        body: {
+                            docs: documents
+                        }
+                    },
+                    response: {
+                        statusCode: 200
                     }
-                },
-                response: {
-                    statusCode: 200
-                }
+                }).then(function () {
+                    // assert the same data is returned with a revision
+                    var returnedDocuments = documents.map(function (doc) {
+                        doc._rev = expect.it('not to be empty');
+
+                        return doc;
+                    });
+
+                    return expect(myHandler, 'to yield exchange', {
+                        request: {
+                            url: '/'
+                        },
+                        response: {
+                            statusCode: 200,
+                            body: {
+                                bulkupdate: returnedDocuments
+                            }
+                        }
+                    });
+                });
             });
         });
 
