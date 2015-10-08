@@ -71,6 +71,22 @@ object and update a single objects.
 
 Used to retrieve all documents in the database.
 
+### POST /:db
+
+Used to submit documents in bulk to the database.
+
+### POST /_clear
+
+An endpoint that will empty the database by marking all documents deleted.
+
+This method requires the request to be confirmed by sending the following body:
+
+```json
+{
+    "confirmed": true
+}
+```
+
 ### GET /:db/:documentId
 
 Used to retrieve the document with matching CouchDB _id from the database.
