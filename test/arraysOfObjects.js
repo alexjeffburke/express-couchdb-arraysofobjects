@@ -535,6 +535,39 @@ describe('express-couchdb-arraysofobjects', function () {
             });
         });
 
+        it('should store the document on POST without _id in body', function () {
+            var writeDocument = {
+                somename: [
+                    {
+                        foo: 'bar'
+                    }
+                ]
+            };
+            var writeDocumentId = 'write@client.com';
+
+            return expect(createHandler({
+                handlerName: 'posthandler',
+                databaseName: 'writedatabase'
+            }), 'with couchdb mocked out', {
+                writedatabase: {
+                    docs: []
+                }
+            }, 'to yield exchange', {
+                request: {
+                    url: '/' + writeDocumentId,
+                    method: 'POST',
+                    body: writeDocument
+                },
+                response: {
+                    statusCode: 200,
+                    body: {
+                        id: writeDocumentId,
+                        rev: expect.it('to be truthy')
+                    }
+                }
+            });
+        });
+
         it('should return an error if a body included _id did not match the request url', function () {
             var requestDocumentId = 'read@client.com';
             var writeDocument = {
