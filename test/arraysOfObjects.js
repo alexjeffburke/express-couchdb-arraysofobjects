@@ -57,8 +57,13 @@ describe('express-couchdb-arraysofobjects', function () {
         var couchServer;
         var that = this;
 
-        function cleanUp() {
+        function cleanUp(err, callback) {
+            if (!couchServer) return;
+
             couchServer.close();
+            couchServer = null;
+
+            callback(err);
         }
 
         return expect.promise(function (run) {
@@ -70,9 +75,13 @@ describe('express-couchdb-arraysofobjects', function () {
 
             couchServer.listen(testPort, run);
         }).then(function () {
-            return expect.promise(function () {
-                return that.shift(subject, 1);
-            }).caught(cleanUp).then(cleanUp);
+            return expect.promise(function (resolve, reject) {
+                return that.shift(subject, 1).caught(function (err) {
+                    cleanUp(err, reject);
+                }).then(function () {
+                    cleanUp(null, resolve);
+                });
+            });
         });
     });
 
