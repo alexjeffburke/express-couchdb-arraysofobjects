@@ -535,6 +535,39 @@ describe('express-couchdb-arraysofobjects', function () {
             });
         });
 
+        it('should return an error if a body included _id did not match the request url', function () {
+            var requestDocumentId = 'read@client.com';
+            var writeDocument = {
+                _id: 'write@client.com',
+                somename: [
+                    {
+                        foo: 'bar'
+                    }
+                ]
+            };
+
+            return expect(createHandler({
+                handlerName: 'posthandler',
+                databaseName: 'writedatabase'
+            }), 'with couchdb mocked out', {
+                writedatabase: {
+                    docs: []
+                }
+            }, 'to yield exchange', {
+                request: {
+                    url: '/' + requestDocumentId,
+                    method: 'POST',
+                    body: writeDocument
+                },
+                response: {
+                    statusCode: 412,
+                    body: {
+                        message: 'Document _id mismatch.'
+                    }
+                }
+            });
+        });
+
         it('should return a 409 conflict error where the revision number does not match', function () {
             var conflictDocument = {
                 _id: 'conflict@client.com',
